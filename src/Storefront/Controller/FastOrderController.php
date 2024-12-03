@@ -18,8 +18,16 @@ class FastOrderController extends StorefrontController
     )]
     public function showForm(Request $request, SalesChannelContext $context): Response
     {
-        return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', [
-            'example' => 'Hello world'
-        ]);
+        return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', []);
+    }
+
+    #[Route(
+        path: '/process-fast-order',
+        name: 'frontend.process.fast.order',
+        methods: ['POST']
+    )]
+    public function processFastOrder(Request $request, SalesChannelContext $context): Response
+    {
+        return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', []);
     }
 }

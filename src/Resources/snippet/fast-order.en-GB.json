@@ -1,0 +1,11 @@
+{
+  "fast-order": {
+    "title": "Fast Order",
+    "form": {
+      "product-number-placeholder": "Product Number",
+      "quantity-placeholder": "Quantity",
+      "add-row": "+Add Row",
+      "add-to-cart": "Add to cart"
+    }
+  }
+}
