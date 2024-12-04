@@ -2,6 +2,7 @@
 
 namespace ShopwareFastOrder\Storefront\Controller;
 
+use Shopware\Core\Checkout\Cart\CartException;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Cart\LineItemFactoryRegistry;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
@@ -45,27 +46,30 @@ class FastOrderController extends StorefrontController
     public function index(Request $request, SalesChannelContext $context): Response
     {
         if ($request->getMethod() === 'POST') {
-            $productNumbers = $this->getProductNumbers($request);
+            $productNumbersMap = $this->getProductNumbersMap($request);
 
             try {
                 $criteria = new Criteria();
-                $criteria->addFilter(new EqualsAnyFilter('productNumber', $productNumbers));
+                $criteria->addFilter(new EqualsAnyFilter('productNumber', $productNumbersMap));
                 $criteria->addFilter(new EqualsFilter('active', true));
 
                 $products = $this->productRepository->search($criteria, $context->getContext());
                 $this->validateSearchResults($products, $request);
-                $this->addItemsToCart($products, $context);
+                $this->addItemsToCart($products, $context, $productNumbersMap, $this->getQuantitiesMap($request));
 
                 return $this->redirectToRoute('frontend.checkout.cart.page');
             } catch (ConstraintViolationException $formViolations) {
-                return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', ['formViolations' => $formViolations, 'rowsCount' => count($productNumbers)]);
+                return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', ['formViolations' => $formViolations, 'rowsCount' => count($productNumbersMap)]);
+            } catch (\Exception $e) {
+                dump($e->getMessage());
+                die;
             }
         }
 
         return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', ["rowsCount" => self::DEFAULT_ROWS_COUNT]);
     }
 
-    private function getProductNumbers(Request $request): array
+    private function getProductNumbersMap(Request $request): array
     {
         $productNumbers = [];
         foreach ($request->request->all() as $key => $value) {
@@ -73,10 +77,26 @@ class FastOrderController extends StorefrontController
                 continue;
             }
 
-            $productNumbers[] = $value;
+            $index = explode('_', $key)[1];
+            $productNumbers[$index] = $value;
         }
 
         return $productNumbers;
+    }
+
+    private function getQuantitiesMap(Request $request): array
+    {
+        $quantities = [];
+        foreach ($request->request->all() as $key => $value) {
+            if (!str_starts_with($key, 'quantity_') ) {
+                continue;
+            }
+
+            $index = explode('_', $key)[1];
+            $quantities[$index] = (int)$value;
+        }
+
+        return $quantities;
     }
 
     private function validateSearchResults(EntitySearchResult $products, Request $request): void
@@ -108,14 +128,19 @@ class FastOrderController extends StorefrontController
         throw new ConstraintViolationException($violations, $request->request->all());
     }
 
-    private function addItemsToCart(EntitySearchResult $products, SalesChannelContext $context): void
+    private function addItemsToCart(
+        EntitySearchResult $products,
+        SalesChannelContext $context,
+        array $productNumbersMap,
+        array $quantitiesMap
+    ): void
     {
         $items = [];
-        /** @var ProductEntity $product */
-        foreach ($products->getElements() as $product) {
+        foreach ($productNumbersMap as $index => $productNumber) {
+            $product = $products->filterByProperty('productNumber', $productNumber)->first();
             $lineItemArray = [
                 'id' => $product->getId(),
-                'quantity' => 1,
+                'quantity' => $quantitiesMap[$index],
                 'stackable' => true,
                 'removable' => true,
                 'type' => LineItem::PRODUCT_LINE_ITEM_TYPE,
