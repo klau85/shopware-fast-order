@@ -60,9 +60,6 @@ class FastOrderController extends StorefrontController
                 return $this->redirectToRoute('frontend.checkout.cart.page');
             } catch (ConstraintViolationException $formViolations) {
                 return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', ['formViolations' => $formViolations, 'rowsCount' => count($productNumbersMap)]);
-            } catch (\Exception $e) {
-                dump($e->getMessage());
-                die;
             }
         }
 
