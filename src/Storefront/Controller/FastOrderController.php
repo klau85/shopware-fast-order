@@ -10,6 +10,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Validation\DataValidationDefinition;
 use Shopware\Core\Framework\Validation\DataValidator;
 use Shopware\Core\Framework\Validation\Exception\ConstraintViolationException;
@@ -49,6 +50,7 @@ class FastOrderController extends StorefrontController
             try {
                 $criteria = new Criteria();
                 $criteria->addFilter(new EqualsAnyFilter('productNumber', $productNumbers));
+                $criteria->addFilter(new EqualsFilter('active', true));
 
                 $products = $this->productRepository->search($criteria, $context->getContext());
                 $this->validateSearchResults($products, $request);
