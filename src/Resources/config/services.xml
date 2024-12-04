@@ -10,6 +10,7 @@
             <argument type="service" id="Shopware\Core\Checkout\Cart\LineItemFactoryRegistry"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
             <argument type="service" id="product.repository"/>
+            <argument type="service" id="Shopware\Core\Framework\Validation\DataValidator"/>
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>

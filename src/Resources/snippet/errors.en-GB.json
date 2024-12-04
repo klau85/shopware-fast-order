@@ -1,0 +1,6 @@
+{
+  "error": {
+    "VIOLATION::PRODUCT_NUMBER_NOT_FOUND": "Product number {{ productNumber }} does not exist.",
+    "VIOLATION::NOT_IN_RANGE_ERROR": "Value for this item must be between {{ min }} and {{ max }}."
+  }
+}

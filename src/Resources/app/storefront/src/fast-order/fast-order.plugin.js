@@ -21,10 +21,12 @@ export default class FastOrder extends PluginBaseClass {
         let productNumberInput = newRow.querySelector('.form-group .product-number');
         productNumberInput.id = 'product-number-' + (rowsCount + 1);
         productNumberInput.value = '';
+        productNumberInput.name = "productNumber_"+ (rowsCount + 1);
 
         let quantityInput = newRow.querySelector('.form-group .quantity');
         quantityInput.id = 'quantity-' + (rowsCount + 1);
         quantityInput.value = 1;
+        quantityInput.name = 'quantity_' + (rowsCount + 1);
 
         this.rowsWrapper.appendChild(newRow);
     }
