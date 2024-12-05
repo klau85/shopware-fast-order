@@ -45,25 +45,26 @@ class FastOrderController extends StorefrontController
     )]
     public function index(Request $request, SalesChannelContext $context): Response
     {
-        if ($request->getMethod() === 'POST') {
-            $productNumbersMap = $this->getProductNumbersMap($request);
-
-            try {
-                $criteria = new Criteria();
-                $criteria->addFilter(new EqualsAnyFilter('productNumber', $productNumbersMap));
-                $criteria->addFilter(new EqualsFilter('active', true));
-
-                $products = $this->productRepository->search($criteria, $context->getContext());
-                $this->validateSearchResults($products, $request);
-                $this->addItemsToCart($products, $context, $productNumbersMap, $this->getQuantitiesMap($request));
-
-                return $this->redirectToRoute('frontend.checkout.cart.page');
-            } catch (ConstraintViolationException $formViolations) {
-                return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', ['formViolations' => $formViolations, 'rowsCount' => count($productNumbersMap)]);
-            }
+        if ($request->getMethod() === 'GET') {
+            return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', ["rowsCount" => self::DEFAULT_ROWS_COUNT]);
         }
 
-        return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', ["rowsCount" => self::DEFAULT_ROWS_COUNT]);
+        $productNumbersMap = $this->getProductNumbersMap($request);
+        $quantitiesMap = $this->getQuantitiesMap($request);
+
+        try {
+            $criteria = new Criteria();
+            $criteria->addFilter(new EqualsAnyFilter('productNumber', $productNumbersMap));
+            $criteria->addFilter(new EqualsFilter('active', true));
+
+            $products = $this->productRepository->search($criteria, $context->getContext());
+            $this->validateSearchResults($products, $request);
+            $this->addItemsToCart($products, $context, $productNumbersMap, $quantitiesMap);
+
+            return $this->redirectToRoute('frontend.checkout.cart.page');
+        } catch (ConstraintViolationException $formViolations) {
+            return $this->renderStorefront('@SwFastOrder/storefront/page/form.html.twig', ['formViolations' => $formViolations, 'rowsCount' => count($productNumbersMap)]);
+        }
     }
 
     private function getProductNumbersMap(Request $request): array
