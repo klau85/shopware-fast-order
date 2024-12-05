@@ -1,0 +1,16 @@
+<div class="fast-order-search">
+    <ul class="search-container">
+        {% for product in products %}
+        <li class="search-result" data-value="{{ product.productNumber }}">
+            <div class="row align-items-center g-0">
+                <div class="col search-product-name me-2">
+                    {{ product.translated.name }}
+                </div>
+                <div class="col-auto search-product-number">
+                    {{ product.productNumber }}
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
