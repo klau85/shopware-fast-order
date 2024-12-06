@@ -11,30 +11,37 @@ export default class SearchPlugin extends PluginBaseClass {
         searchWidgetDelay: 200,
         searchUrlDataAttribute: 'data-url',
         searchResultSelector: '.fast-order-search',
-        searchResultItemSelector: '.search-result'
+        searchResultItemSelector: '.search-result',
+        suggestionClass: 'suggestion'
     };
 
     init() {
-        this._url = DomAccess.getAttribute(this.el, this.options.searchUrlDataAttribute);
-        this._client = new HttpClient();
-        this._registerEvents();
+        if (this.el.value.length > 0 && !this.el.classList.contains('is-invalid')) {
+            this.el.classList.add(this.options.suggestionClass);
+        }
+        this.url = DomAccess.getAttribute(this.el, this.options.searchUrlDataAttribute);
+        this.client = new HttpClient();
+        this.registerEvents();
     }
 
-    _registerEvents(){
+    registerEvents(){
         this.el.addEventListener(
             'input',
-            Debouncer.debounce(this._handleInputEvent.bind(this), this.options.searchWidgetDelay)
+            Debouncer.debounce(this.handleInputEvent.bind(this), this.options.searchWidgetDelay)
+        );
+
+        this.el.addEventListener(
+            'keyup',
+            this.onInputChanged.bind(this)
         );
 
         document.body.addEventListener(
             'click',
-            this._onBodyClick.bind(this)
+            this.onBodyClick.bind(this)
         );
-
-
     }
 
-    _handleInputEvent() {
+    handleInputEvent() {
         const value = this.el.value.trim();
 
         // stop search if minimum input value length has not been reached
@@ -42,39 +49,43 @@ export default class SearchPlugin extends PluginBaseClass {
             return;
         }
 
-        this._suggest(value);
+        this.suggest(value);
     }
 
-    _suggest(value) {
-        const url = this._url + encodeURIComponent(value);
-        this._client.abort();
+    onInputChanged(e) {
+        this.el.classList.remove(this.options.suggestionClass);
+    }
 
-        this._client.get(url, (response) => {
-            // attach search results to the DOM
-            this._clearSearchResults();
+    suggest(value) {
+        const url = this.url + encodeURIComponent(value);
+        this.client.abort();
+
+        this.client.get(url, (response) => {
+            this.clearSearchResults();
             this.el.insertAdjacentHTML('afterend', response);
             let searchResults = this.el.parentNode.querySelectorAll(this.options.searchResultItemSelector);
 
             searchResults.forEach(item => {
-                item.addEventListener('click', this._onSearchResultClick.bind(this));
+                item.addEventListener('click', this.onSearchResultClick.bind(this));
             });
         });
     }
 
-    _clearSearchResults() {
+    clearSearchResults() {
         const results = document.querySelectorAll(this.options.searchResultSelector);
         Iterator.iterate(results, result => result.remove());
     }
 
-    _onBodyClick(e) {
+    onBodyClick(e) {
         if (e.target.closest(this.options.searchResultSelector)) {
             return;
         }
 
-        this._clearSearchResults();
+        this.clearSearchResults();
     }
 
-    _onSearchResultClick(e) {
+    onSearchResultClick(e) {
         this.el.value = e.target.getAttribute('data-value');
+        this.el.classList.add(this.options.suggestionClass);
     }
 }

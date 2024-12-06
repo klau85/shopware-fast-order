@@ -1,6 +1,13 @@
 const { PluginBaseClass } = window;
 
 export default class FastOrder extends PluginBaseClass {
+
+    static options = {
+        searchFieldSelector: '.search-field',
+        selectedSuggestionClass: 'suggestion',
+        formErrorSelector: '.error',
+    }
+
     init() {
         this.rowsWrapper = this.el.children['rows-wrapper'];
         this._registerEvents();
@@ -8,7 +15,20 @@ export default class FastOrder extends PluginBaseClass {
 
     _registerEvents()
     {
+        this.el.addEventListener('submit', this.onSubmit.bind(this));
         this.el.querySelector('#add-row').onclick = this.addRow.bind(this);
+    }
+
+    onSubmit(e){
+        let searchFields = this.el.querySelectorAll(this.options.searchFieldSelector);
+
+        for (const item of searchFields) {
+            if (!item.classList.contains(this.options.selectedSuggestionClass)) {
+                e.preventDefault();
+                this.el.querySelector(this.options.formErrorSelector).classList.remove('d-none');
+                break;
+            }
+        }
     }
 
     addRow(event)

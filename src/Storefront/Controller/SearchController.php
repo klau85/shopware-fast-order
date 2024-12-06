@@ -5,8 +5,8 @@ namespace ShopwareFastOrder\Storefront\Controller;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\RangeFilter;
 use Shopware\Core\Framework\Routing\RoutingException;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Controller\StorefrontController;
@@ -39,6 +39,7 @@ class SearchController extends StorefrontController
         $criteria = new Criteria();
         $criteria->addFilter(new ContainsFilter('productNumber', $productNumber));
         $criteria->addFilter(new EqualsFilter('active', true));
+        $criteria->addFilter(new RangeFilter('availableStock', [RangeFilter::GTE => 1]));
 
         $products = $this->productRepository->search($criteria, $context->getContext());
 

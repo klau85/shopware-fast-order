@@ -5,7 +5,8 @@
       "product-number-placeholder": "Product Number",
       "quantity-placeholder": "Quantity",
       "add-row": "+Add Row",
-      "add-to-cart": "Add to cart"
+      "add-to-cart": "Add to cart",
+      "error": "All product numbers must be selected from suggestion lists."
     }
   }
 }
